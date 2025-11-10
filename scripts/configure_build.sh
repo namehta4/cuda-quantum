@@ -130,20 +130,20 @@ if [ "$1" == "build-openmpi" ]; then
     OPENMPI_VERSION=4.1.4
     OPENMPI_DOWNLOAD_URL=https://github.com/open-mpi/ompi
 
-    wget "${OPENMPI_DOWNLOAD_URL}/archive/v${OPENMPI_VERSION}.tar.gz" -O /tmp/openmpi.tar.gz
-    mkdir -p ~/.openmpi-src && tar xf /tmp/openmpi.tar.gz --strip-components 1 -C ~/.openmpi-src
-    rm -rf /tmp/openmpi.tar.gz && cd ~/.openmpi-src
-    ./autogen.pl 
-    LDFLAGS=-Wl,--as-needed ./configure \
-        --prefix=/usr/local/openmpi \
-        --disable-getpwuid --disable-static \
-        --disable-debug --disable-mem-debug --disable-event-debug \
-        --disable-mem-profile --disable-memchecker \
-        --without-verbs \
-        --with-cuda=/usr/local/cuda
-    make -j$(nproc) 
-    make -j$(nproc) install
-    cd - && rm -rf ~/.openmpi-src
+#    wget "${OPENMPI_DOWNLOAD_URL}/archive/v${OPENMPI_VERSION}.tar.gz" -O /tmp/openmpi.tar.gz
+#    mkdir -p ~/.openmpi-src && tar xf /tmp/openmpi.tar.gz --strip-components 1 -C ~/.openmpi-src
+#    rm -rf /tmp/openmpi.tar.gz && cd ~/.openmpi-src
+#    ./autogen.pl 
+#    LDFLAGS=-Wl,--as-needed ./configure \
+#        --prefix=/usr/local/openmpi \
+#        --disable-getpwuid --disable-static \
+#        --disable-debug --disable-mem-debug --disable-event-debug \
+#        --disable-mem-profile --disable-memchecker \
+#        --without-verbs \
+#        --with-cuda=/usr/local/cuda
+#    make -j$(nproc) 
+#    make -j$(nproc) install
+#    cd - && rm -rf ~/.openmpi-src
 # [<OpenMPIBuild]
 fi
 
