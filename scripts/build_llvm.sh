@@ -33,7 +33,7 @@
 # - https://www.collabora.com/news-and-blog/blog/2023/01/17/a-brave-new-world-building-glibc-with-llvm/
 
 LLVM_INSTALL_PREFIX=${LLVM_INSTALL_PREFIX:-$HOME/.llvm}
-LLVM_PROJECTS=${LLVM_PROJECTS:-'clang;lld;mlir;python-bindings'}
+LLVM_PROJECTS=${LLVM_PROJECTS:-'clang;flang;lld;mlir;python-bindings;openmp;runtimes'}
 PYBIND11_INSTALL_PREFIX=${PYBIND11_INSTALL_PREFIX:-/usr/local/pybind11}
 Python3_EXECUTABLE=${Python3_EXECUTABLE:-python3}
 
@@ -213,12 +213,12 @@ cat ~config.guess > "$LLVM_SOURCE/llvm/cmake/config.guess" && rm -rf ~config.gue
 
 # Some flags that may be useful to build a GPU-offload-capable compiler: 
 # targets_to_build="host;NVPTX"
-#  -DLLVM_TARGETS_TO_BUILD='"$targets_to_build"' \
 #  -DLIBOMPTARGET_DEVICE_ARCHITECTURES=sm_70,sm_75,sm_80
 # maybe:  -DLLVM_RUNTIME_TARGETS='nvptx64-nvidia-cuda' \
 cmake_args=" \
   -DLLVM_DEFAULT_TARGET_TRIPLE='"$(bash $LLVM_SOURCE/llvm/cmake/config.guess)"' \
   -DCMAKE_BUILD_TYPE=$build_configuration \
+  -DLLVM_TARGETS_TO_BUILD="Native;NVPTX" \
   -DCMAKE_INSTALL_PREFIX='"$LLVM_INSTALL_PREFIX"' \
   -DLLVM_ENABLE_PROJECTS='"${llvm_projects%;}"' \
   -DLLVM_ENABLE_RUNTIMES='"${llvm_runtimes%;}"' \
