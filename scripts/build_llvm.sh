@@ -213,12 +213,12 @@ cat ~config.guess > "$LLVM_SOURCE/llvm/cmake/config.guess" && rm -rf ~config.gue
 
 # Some flags that may be useful to build a GPU-offload-capable compiler: 
 # targets_to_build="host;NVPTX"
+#  -DLLVM_TARGETS_TO_BUILD="Native;NVPTX" \
 #  -DLIBOMPTARGET_DEVICE_ARCHITECTURES=sm_70,sm_75,sm_80
 # maybe:  -DLLVM_RUNTIME_TARGETS='nvptx64-nvidia-cuda' \
 cmake_args=" \
   -DLLVM_DEFAULT_TARGET_TRIPLE='"$(bash $LLVM_SOURCE/llvm/cmake/config.guess)"' \
   -DCMAKE_BUILD_TYPE=$build_configuration \
-  -DLLVM_TARGETS_TO_BUILD="Native;NVPTX" \
   -DCMAKE_INSTALL_PREFIX='"$LLVM_INSTALL_PREFIX"' \
   -DLLVM_ENABLE_PROJECTS='"${llvm_projects%;}"' \
   -DLLVM_ENABLE_RUNTIMES='"${llvm_runtimes%;}"' \
