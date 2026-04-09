@@ -7,7 +7,7 @@
 # ============================================================================ #
 
 # This file builds the development environment that contains the necessary development 
-# dependencies for building and testing CUDA-Q. This does not include the CUDA, OpenMPI 
+# dependencies for building and testing CUDA-Q. This does not include the CUDA
 # and other dependencies that some of the simulator backends require. These backends
 # will be omitted from the build if this environment is used.
 #

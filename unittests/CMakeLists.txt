@@ -230,7 +230,7 @@ if (CUSTATEVEC_ROOT AND CUDA_FOUND)
             gtest_main)
           configure_file("mqpu/run_mpi.sh.in"
                     "${CMAKE_BINARY_DIR}/unittests/run_mpi.sh" @ONLY)
-        add_test(NAME MPITest COMMAND ${MPIEXEC} --allow-run-as-root -np 2 bash ${CMAKE_BINARY_DIR}/unittests/run_mpi.sh)
+        add_test(NAME MPITest COMMAND ${MPIEXEC} -np 2 bash ${CMAKE_BINARY_DIR}/unittests/run_mpi.sh)
         set_tests_properties(MPITest PROPERTIES LABELS "gpu_required;mgpus_required" RESOURCE_LOCK "gpu")
       endif()
     endif()
@@ -277,7 +277,7 @@ if(TARGET nvqir-tensornet)
             cudaq-platform-default
             nvqir-tensornet
             gtest)
-        add_test(NAME TensornetMPITest COMMAND ${MPIEXEC} --allow-run-as-root -np 2 ${CMAKE_BINARY_DIR}/unittests/test_tensornet_mpi)
+        add_test(NAME TensornetMPITest COMMAND ${MPIEXEC} -np 2 ${CMAKE_BINARY_DIR}/unittests/test_tensornet_mpi)
         set_tests_properties(TensornetMPITest PROPERTIES LABELS "gpu_required;mgpus_required" RESOURCE_LOCK "gpu")
       endif() # NGPUS
     endif() # NVIDIA_SMI
@@ -456,7 +456,7 @@ if (CUDA_FOUND)
           gtest_main
           )
 
-        add_test(NAME DynamicsMPIBatchingTest COMMAND ${MPIEXEC} --allow-run-as-root -np 2 ${CMAKE_BINARY_DIR}/unittests/test_dynamics_mpi_batching)
+        add_test(NAME DynamicsMPIBatchingTest COMMAND ${MPIEXEC} -np 2 ${CMAKE_BINARY_DIR}/unittests/test_dynamics_mpi_batching)
         set_tests_properties(DynamicsMPIBatchingTest PROPERTIES LABELS "gpu_required;mgpus_required" RESOURCE_LOCK "gpu")
       endif()
     endif()
@@ -592,14 +592,7 @@ if (MPI_CXX_FOUND)
     gtest
   )
   target_link_options(test_mpi_plugin PRIVATE ${CUDAQ_FORCE_LINK_FLAG})
-  # Check if `--allow-run-as-root` is supported (OpenMPI)
-  # Note: MPICH doesn't need `--allow-run-as-root`.
-  execute_process(COMMAND ${MPIEXEC} --allow-run-as-root -np ${NUM_PROCS} hostname ERROR_VARIABLE CHECK_ALLOW_RUN_AS_ROOT_RESULTS ERROR_STRIP_TRAILING_WHITESPACE OUTPUT_QUIET)
-  if ("${CHECK_ALLOW_RUN_AS_ROOT_RESULTS}" STREQUAL "")
-    set(MPI_EXEC_CMD_ARGS "--allow-run-as-root")
-  endif()
-
-  add_test(NAME MPIApiTest COMMAND ${MPIEXEC} ${MPI_EXEC_CMD_ARGS} -np ${NUM_PROCS} ${CMAKE_BINARY_DIR}/unittests/test_mpi_plugin)
+  add_test(NAME MPIApiTest COMMAND ${MPIEXEC} -np ${NUM_PROCS} ${CMAKE_BINARY_DIR}/unittests/test_mpi_plugin)
   math(EXPR MPI_API_TEST_SLOTS "${NUM_PROCS} * ${CUDAQ_TEST_OMP_SLOTS}")
   set_tests_properties(MPIApiTest PROPERTIES PROCESSORS ${MPI_API_TEST_SLOTS})
 endif()

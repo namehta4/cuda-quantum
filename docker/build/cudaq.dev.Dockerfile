@@ -30,7 +30,7 @@ ENV PATH="$CUDAQ_INSTALL_PREFIX/bin:${PATH}"
 ENV PYTHONPATH="$CUDAQ_INSTALL_PREFIX:${PYTHONPATH}"
 
 # Install MPI before ADD so this layer is cached across source changes.
-# mpich or openmpi
+# mpich
 ARG mpi=
 RUN if [ -n "$mpi" ]; \
     then \
@@ -101,12 +101,7 @@ FROM test AS test-mpi
 ARG run_tests=false
 ARG mpi=
 RUN if [ "$run_tests" = "true" ] && [ -n "$mpi" ]; then \
-        has_ompiinfo=$(which ompi_info || true) && \
-        if [ -n "$has_ompiinfo" ]; then \
-            export MPI_PATH="/usr/lib/$(uname -m)-linux-gnu/openmpi/"; \
-        else \
-            export MPI_PATH="/usr/lib/$(uname -m)-linux-gnu/mpich/"; \
-        fi && \
+        export MPI_PATH="/usr/lib/$(uname -m)-linux-gnu/mpich/"; \
         source $CUDAQ_INSTALL_PREFIX/distributed_interfaces/activate_custom_mpi.sh && \
         cd $CUDAQ_REPO_ROOT && \
         ctest --test-dir build -R MPIApiTest -V; \

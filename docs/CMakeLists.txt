@@ -104,11 +104,11 @@ if (CUSTATEVEC_ROOT AND CUDA_FOUND)
                         TARGET nvidia 
                         TARGET_OPTION mqpu 
                         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sphinx/snippets/cpp 
-                        LAUNCH_COMMAND "${MPIEXEC} --allow-run-as-root -np 2")
+                        LAUNCH_COMMAND "${MPIEXEC} -np 2")
         add_nvqpp_test(LegacyObserveMQPU_MPI using/cudaq/platform/observe_mqpu_mpi.cpp
                         TARGET nvidia-mqpu 
                         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sphinx/snippets/cpp 
-                        LAUNCH_COMMAND "${MPIEXEC} --allow-run-as-root -np 2")
+                        LAUNCH_COMMAND "${MPIEXEC} -np 2")
       endif()
     endif(NVIDIA_SMI)  
   endif()   
@@ -167,7 +167,7 @@ if (CUDAQ_ENABLE_PYTHON)
       add_pycudaq_test(ObserveMQPU_MPI using/cudaq/platform/observe_mqpu_mpi.py 
                         LABELS "gpu_required;mgpus_required"
                         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sphinx/snippets/python
-                        LAUNCH_COMMAND "${MPIEXEC} --allow-run-as-root -np 2")
+                        LAUNCH_COMMAND "${MPIEXEC} -np 2")
     endif()
   endif()
 endif()

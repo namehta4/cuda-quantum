@@ -6,30 +6,16 @@
 # the terms of the Apache License 2.0 which accompanies this distribution.     #
 # ============================================================================ #
 
-# This file contains additional CUDA-Q development dependencies. 
+# This file contains additional CUDA-Q development dependencies.
 # The image installs cuQuantum, cuTensor, and the CUDA packages defined by the
-# cuda_packages build argument. It copies the OpenMPI installation and its 
-# dependencies from the given ompidev_image. The copied paths can be configured
-# via build arguments.  
+# cuda_packages build argument.
 #
 # Usage:
 # Must be built from the repo root with:
-#   docker build -t ghcr.io/nvidia/cuda-quantum-devdeps:ext -f docker/build/devdeps.ext.Dockerfile .
+#   docker build -t ghcr.io/nvidia/cuda-quantum-devdeps:ext -f docker/build/devcontainer.Dockerfile .
 
 ARG cuda_version=12.6
 ARG base_image=ghcr.io/nvidia/cuda-quantum-devdeps:gcc11-main
-ARG ompidev_image=ghcr.io/nvidia/cuda-quantum-devdeps:cu12-ompi-main
-FROM $ompidev_image AS ompibuild
-ARG cuda_version
-RUN if [ -z "${cuda_version}" ]; then \
-        echo -e "\e[01;31mError: Missing argument cuda_version.\e[0m" >&2 && \
-        exit 1; \
-    fi && \        
-    if [ -n "${CUDA_VERSION}" ] && [ "${CUDA_VERSION}" != "${cuda_version}" ]; then \
-        echo -e "\e[01;31mError: CUDA version ${CUDA_VERSION} in ompidev_image does not match ${cuda_version}.\e[0m" >&2 && \
-        exit 1; \
-    fi
-
 FROM $base_image
 SHELL ["/bin/bash", "-c"]
 ARG cuda_version
@@ -58,79 +44,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg \
     && rm /etc/apt/trusted.gpg && rm /etc/apt/sources.list.d/mellanox_mlnx_ofed.list \
     && apt-get remove -y gnupg \
     && apt-get autoremove -y --purge && apt-get clean && rm -rf /var/lib/apt/lists/* 
-
-# Copy over SLURM PMI2.
-
-ARG PMI_INSTALL_PREFIX=/usr/local/pmi
-ENV PMI_INSTALL_PREFIX="$PMI_INSTALL_PREFIX"
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$PMI_INSTALL_PREFIX/lib"
-COPY --from=ompibuild "$PMI_INSTALL_PREFIX" "$PMI_INSTALL_PREFIX"
-
-# Copy over GDRCOPY and install runtime dependencies.
-
-ARG GDRCOPY_INSTALL_PREFIX=/usr/local/gdrcopy
-ENV GDRCOPY_INSTALL_PREFIX="$GDRCOPY_INSTALL_PREFIX"
-ENV CPATH="$GDRCOPY_INSTALL_PREFIX/include:$CPATH"
-ENV LIBRARY_PATH="$GDRCOPY_INSTALL_PREFIX/lib64:$LIBRARY_PATH"
-COPY --from=ompibuild "$GDRCOPY_INSTALL_PREFIX" "$GDRCOPY_INSTALL_PREFIX"
-
-RUN echo "$GDRCOPY_INSTALL_PREFIX/lib64" >> /etc/ld.so.conf.d/hpccm.conf && ldconfig \
-    && apt-get update -y && apt-get install -y --no-install-recommends \
-        libgcrypt20 libnuma1 \
-    && apt-get autoremove -y --purge && apt-get clean && rm -rf /var/lib/apt/lists/* 
-
-# Copy over UCX.
-
-ARG UCX_INSTALL_PREFIX=/usr/local/ucx
-ENV UCX_INSTALL_PREFIX="$UCX_INSTALL_PREFIX"
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$UCX_INSTALL_PREFIX/lib"
-COPY --from=ompibuild "$UCX_INSTALL_PREFIX" "$UCX_INSTALL_PREFIX"
-
-# Copy over MUNGE.
-
-ARG MUNGE_INSTALL_PREFIX=/usr/local/munge
-ENV MUNGE_INSTALL_PREFIX="$MUNGE_INSTALL_PREFIX"
-COPY --from=ompibuild "$MUNGE_INSTALL_PREFIX" "$MUNGE_INSTALL_PREFIX"
-
-# Copy over PMIX and install runtime dependencies.
-
-ARG PMIX_INSTALL_PREFIX=/usr/local/pmix
-ENV PMIX_INSTALL_PREFIX="$PMIX_INSTALL_PREFIX"
-ENV PATH="$PMIX_INSTALL_PREFIX/bin:$PATH"
-ENV CPATH="$PMIX_INSTALL_PREFIX/include:$CPATH"
-ENV LD_LIBRARY_PATH="$PMIX_INSTALL_PREFIX/lib:$LD_LIBRARY_PATH"
-COPY --from=ompibuild "$PMIX_INSTALL_PREFIX" "$PMIX_INSTALL_PREFIX"
-
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
-        hwloc libevent-dev \
-    && apt-get autoremove -y --purge && apt-get clean && rm -rf /var/lib/apt/lists/* 
-
-# Copy over OpenMPI and install runtime dependencies.
-
-ARG OPENMPI_INSTALL_PREFIX=/usr/local/openmpi
-ENV OPENMPI_INSTALL_PREFIX="$OPENMPI_INSTALL_PREFIX"
-ENV MPI_HOME="$OPENMPI_INSTALL_PREFIX"
-ENV MPI_ROOT="$OPENMPI_INSTALL_PREFIX"
-ENV MPI_PATH="$OPENMPI_INSTALL_PREFIX"
-ENV PATH="$OPENMPI_INSTALL_PREFIX/bin:$PATH"
-ENV CPATH="$OPENMPI_INSTALL_PREFIX/include:/usr/local/ofed/5.0-0/include:$CPATH"
-ENV LIBRARY_PATH="/usr/local/ofed/5.0-0/lib:$LIBRARY_PATH"
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$OPENMPI_INSTALL_PREFIX/lib"
-COPY --from=ompibuild "$OPENMPI_INSTALL_PREFIX" "$OPENMPI_INSTALL_PREFIX"
-
-RUN echo "$OPENMPI_INSTALL_PREFIX/lib" >> /etc/ld.so.conf.d/hpccm.conf && ldconfig \
-    && apt-get update -y && apt-get install -y --no-install-recommends \
-        flex openssh-client \
-    && apt-get autoremove -y --purge && apt-get clean && rm -rf /var/lib/apt/lists/* 
-
-# Set some configurations in the form of environment variables.
-
-ENV OMPI_MCA_btl=^smcuda,vader,tcp,uct,openib
-ENV OMPI_MCA_pml=ucx
-ENV UCX_IB_PCI_RELAXED_ORDERING=on
-ENV UCX_MAX_RNDV_RAILS=1
-ENV UCX_MEMTYPE_CACHE=n
-ENV UCX_TLS=rc,cuda_copy,cuda_ipc,gdr_copy,sm
 
 # Install CUDA
 

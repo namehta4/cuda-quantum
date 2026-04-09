@@ -11,7 +11,7 @@
 
     This is an implementation of the MPI shim interface defined in
    distributed_capi.h. This can be compiled and linked against an MPI
-   implementation (e.g., OpenMPI or MPICH) to produce a runtime loadable plugin
+   implementation (e.g., MPICH) to produce a runtime loadable plugin
    providing CUDA-Q with necessary MPI functionalities.
 */
 
@@ -28,9 +28,6 @@
 // following flag makes sure the C++ bindings are not included.
 #if !defined(MPICH_SKIP_MPICXX)
 #define MPICH_SKIP_MPICXX 1
-#endif
-#if !defined(OMPI_SKIP_MPICXX)
-#define OMPI_SKIP_MPICXX 1
 #endif
 #include <mpi.h>
 

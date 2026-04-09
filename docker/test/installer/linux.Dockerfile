@@ -7,30 +7,6 @@
 # ============================================================================ #
 
 ARG base_image=redhat/ubi8:8.10
-ARG base_image_mpibuild=amd64/almalinux:8
-
-# [OpenMPI Installation]
-FROM ${base_image_mpibuild} AS mpibuild
-ARG base_image_mpibuild
-SHELL ["/bin/bash", "-c"]
-ARG DEBIAN_FRONTEND=noninteractive
-ARG cudart_version
-
-## [Prerequisites]
-ADD docker/test/installer/runtime_dependencies.sh /runtime_dependencies.sh
-RUN CUDA_DISTRIBUTION=rhel9 \
-    CUDART_VERSION=${cudart_version} \
-    bash runtime_dependencies.sh ${base_image_mpibuild}
-RUN dnf install -y --nobest --setopt=install_weak_deps=False \
-        autoconf libtool flex make wget
-
-ADD scripts/configure_build.sh /cuda-quantum/scripts/configure_build.sh
-RUN source /cuda-quantum/scripts/configure_build.sh install-gcc && \
-    dnf install -y --nobest --setopt=install_weak_deps=False \
-        cuda-cudart-devel-$(echo ${cudart_version} | tr . -)
-
-## [Build]
-RUN source /cuda-quantum/scripts/configure_build.sh build-openmpi
 
 # [CUDA-Q Installation]
 FROM ${base_image}
@@ -56,8 +32,8 @@ RUN export LIBCDEV_PACKAGE=${libcdev_package} && \
         >> /etc/environment
 
 ## [MPI Installation]
-COPY --from=mpibuild /usr/local/openmpi/ /usr/local/openmpi
-RUN ln -s /usr/local/openmpi/bin/mpiexec /bin/mpiexec
+RUN dnf install -y --nobest --setopt=install_weak_deps=False mpich mpich-devel \
+    && ln -s /usr/lib64/mpich/bin/mpiexec /bin/mpiexec
 
 # Create new user `cudaq` with admin rights to confirm installation steps.
 RUN useradd cudaq && mkdir -p /etc/sudoers.d && \
@@ -72,7 +48,7 @@ ADD "${cuda_quantum_installer}" .
 RUN source /etc/environment && \
     echo "Installing CUDA-Q..." && \
     ## [>CUDAQuantumInstall]
-    MPI_PATH=/usr/local/openmpi \
+    MPI_PATH=/usr/lib64/mpich \
     sudo -E bash install_cuda_quantum*.$(uname -m) --accept && . /etc/profile
     ## [<CUDAQuantumInstall]
 RUN . /etc/profile && nvq++ --help

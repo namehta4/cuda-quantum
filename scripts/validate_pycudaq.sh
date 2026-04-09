@@ -300,15 +300,6 @@ else
     pip install pytest pytest-xdist
 fi
 
-# Run OpenMPI setup (Linux only)
-if ! $is_macos; then
-    ompi_script="$(awk '/(Begin ompi setup)/{flag=1;next}/(End ompi setup)/{flag=0}flag' "$readme_file" | grep . | sed '/^```/d')"
-    while IFS= read -r line; do
-        if [ -n "$(echo $line | tr -d '[:space:]')" ]; then
-            eval "$line"
-        fi
-    done <<<"$ompi_script"
-fi
 status_sum=0
 
 # Run all tests from a temp directory so the repo tree (cwd, _skbuild/,
@@ -512,11 +503,11 @@ else
     server2_devices=$(echo $(seq 0 $((($nr_gpus >> 1) - 1))) | tr ' ' ,)
     echo "Launching server 1..."
     servers="localhost:12001"
-    CUDA_VISIBLE_DEVICES=$server1_devices mpiexec --allow-run-as-root -np 2 python3 "$qpud_py" --port 12001 &
+    CUDA_VISIBLE_DEVICES=$server1_devices mpiexec -np 2 python3 "$qpud_py" --port 12001 &
     if [ -n "$server2_devices" ]; then
         echo "Launching server 2..."
         servers+=",localhost:12002"
-        CUDA_VISIBLE_DEVICES=$server2_devices mpiexec --allow-run-as-root -np 2 python3 "$qpud_py" --port 12002 &
+        CUDA_VISIBLE_DEVICES=$server2_devices mpiexec -np 2 python3 "$qpud_py" --port 12002 &
     fi
 
     sleep 20 # wait for servers to launch
